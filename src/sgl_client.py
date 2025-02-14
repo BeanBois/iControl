@@ -6,15 +6,13 @@ import json
 import time
 import numpy as np
 import torch
-from stdp_model import SNNControllerSTDP
-
+from sgl_model import SNNControllerSTDP
 # Set device (CPU)
-device = torch.device("cpu")
 
 # Load the SNN controller model (STDP enabled).
 # In a training scenario, you might load pre-trained weights or start from random.
+
 model = SNNControllerSTDP(input_dim=24, hidden_dim=32, output_dim=4).to(device)
-model.train()  # In STDP, learning occurs during forward passes.
 print("[Client] SNN Controller with STDP loaded.")
 
 # Constants for central server connection.

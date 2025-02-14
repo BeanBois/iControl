@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 import lava.dl.slayer as slayer
 
+# Simple SNN 
 class SNNController(nn.Module):
     """
     A simple spiking neural network controller built with Lava-DL SLAYER modules.
