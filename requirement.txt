@@ -1,0 +1,4 @@
+pandas
+numpy
+lava-nc
+lava-dl

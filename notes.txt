@@ -1,0 +1,88 @@
+
+This task relates to decentralised federated learning of 4 moving robots with 4 raspberry pi using Lava framework for SNNs
+
+Firstly, since we dont have access to an actual robot, i will have a computer (laptop1) that runs a simulator of 4 robots using pygym
+
+We will have each rpi be responsible for controlling 1 robot with the Lava framework. 
+They will use SNNs with the Lava framework (or even sigma-delta neural network)
+
+
+then to communicate among the system for federated learning, we perform graph diffusion on the SNNs of the robot. 
+We want the diffusion to only diffuse the 'foundation' part of the model. 
+In our example, say that we have four 4-legged robots which are paired up to be placed in 2 different terrain (flat or sloppy),  (1)
+or maybe we have 2 of 2 different 4-legged robots and for each pair of robot, one is placed in a different terrain (2)
+
+we want to perform graph diffusion such that the sharing of learnt knowledge includes the learnt knowledge from walking, 
+and the learnt knowledge from terrain, but not learn knowledge that are dependent on the robot's dimension.
+
+This can be done by using Generalised Measure of Information transfer from paper [https://arxiv.org/abs/1102.1507] , 
+We can treat the sharing of terrain knowledge as unique Information for robots from different terrain (since they are unique to each robot);
+or treat the sharing of manuevering knowledge for all robots as synergistic information since they may not have perfect knowledge of walking at 
+initially and may optimise differently. Terrain knowledge for robots from same environment is also synergistic, since they may not know the environment well. 
+knowledge learnt based on robot's dimensionality will be considered redundant knowledge to robots that are different as they are largely irrelevant.
+
+
+### Solution Design for Decentralized Federated Learning in Multi-Robot SNNs with Lava Framework  
+This task involves training four simulated robots (via Pygym) using Raspberry Pis (RPis) with Spiking Neural Networks (SNNs) in a decentralized federated learning (FL) setup. The goal is to enable knowledge sharing through **graph diffusion** while isolating terrain-specific, maneuvering, and robot-dimension-dependent knowledge. Below is a structured approach:
+
+---
+
+#### **1. System Architecture and Model Partitioning**  
+- **SNN Structure**: Split each robot’s SNN into two parts:  
+  - **Foundation Layer**: Shared across robots via graph diffusion. This layer captures *general locomotion knowledge* (e.g., walking patterns, balance control) and *terrain-agnostic features*.  
+  - **Specific Layer**: Retained locally to handle robot-specific parameters (e.g., dimensions, actuator dynamics) .  
+- **Lava Framework**: Use Lava’s SNN or Sigma-Delta Neural Network (SDNN) libraries for energy-efficient computation on RPis, leveraging SNNs’ sparse communication and event-driven processing .  
+
+---
+
+#### **2. Graph Diffusion for Federated Learning**  
+- **Graph Structure**:  
+  - Pair robots based on terrain (e.g., two in flat terrain, two in sloped) to form subgraphs.  
+  - Use a hybrid graph topology: *intra-terrain edges* for sharing terrain-specific knowledge and *inter-terrain edges* for synergistic maneuvering knowledge .  
+- **Knowledge Partitioning via Information Theory**:  
+  - **Unique Information** (Terrain-Specific): Apply *Generalized Measure of Information Transfer* to isolate terrain adaptation parameters (e.g., friction handling). Robots in the same terrain group share this uniquely .  
+  - **Synergistic Information** (Maneuvering): Diffuse locomotion strategies across all robots, allowing collective optimization of walking patterns (e.g., gait synchronization) .  
+  - **Redundant Information** (Robot Dimensions): Mask parameters tied to robot hardware (e.g., leg length, weight) during diffusion .  
+
+---
+
+#### **3. Implementation Workflow**  
+1. **Simulation Setup**:  
+   - Use Pygym to simulate four robots (two terrain types, two robot designs).  
+   - Assign each robot to an RPi running Lava-based SNNs.  
+2. **Local Training**:  
+   - Robots train locally on terrain-specific tasks (e.g., slope navigation) while updating both foundation and specific layers.  
+3. **Graph Diffusion Phase**:  
+   - **Intra-Terrain Diffusion**: Share foundation layer parameters within terrain groups (e.g., flat-terrain robots exchange slope adaptation knowledge).  
+   - **Global Synergistic Diffusion**: Aggregate maneuvering parameters across all robots using decentralized averaging (e.g., consensus algorithms) .  
+4. **Regularization**: Apply gradient masking to exclude dimension-dependent parameters from updates .  
+
+---
+
+#### **4. Addressing Challenges**  
+- **Non-IID Data**: Use prototype propagation (from graph FL) to align feature representations across terrains .  
+- **Stragglers**: Implement asynchronous aggregation for RPis with computational delays .  
+- **Privacy**: Leverage Lava’s event-driven spiking to minimize raw data transmission .  
+
+---
+
+#### **5. Validation Metrics**  
+- **Terrain Adaptation Accuracy**: Compare success rates in navigating assigned terrains.  
+- **Energy Efficiency**: Measure computational overhead on RPis (SNNs vs. traditional ANNs) .  
+- **Convergence Speed**: Track how quickly synergistic knowledge stabilizes across robots .  
+
+---
+
+### **Example Scenario**  
+For two robot pairs (flat vs. sloped terrain):  
+- **Flat-Terrain Pair**: Diffuse foundation parameters like "steady gait optimization."  
+- **Sloped-Terrain Pair**: Share "slope resistance adjustments."  
+- **Global Synergy**: All robots contribute to "obstacle avoidance strategies."  
+- **Excluded**: Parameters like "leg servo calibration" (robot-specific).  
+
+### **Relevant Tools & References**  
+- **Lava Framework**: Supports SNN/SDNN deployment on neuromorphic hardware .  
+- **Decentralized FL Frameworks**: Use graph-based aggregation from  and terrain-aware prototypes from .  
+- **Information Partitioning**: Apply metrics from  to distinguish unique/synergistic knowledge.  
+
+This approach balances specialization and collaboration, enabling efficient, privacy-preserving FL for heterogeneous robotic systems.
